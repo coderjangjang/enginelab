@@ -15,7 +15,7 @@ const put=(l:Preset[])=>{setPre(l);try{localStorage.setItem(KEY,JSON.stringify(l
 const run=(p:Partial<typeof sim.auto>={})=>up(()=>{onStart();Object.assign(sim.auto,p,{t:0,on:true,hold:false});if(!sim.running&&sim.starting<=0)sim.start()})
 const apply=(p:Preset)=>run({mode:p.mode,target:p.target,min:p.min,max:p.max,period:p.period,loop:p.loop})
 const state=!A.on?'OFF':!s.running?'WAITING FOR ENGINE':A.hold?'HOLD':'RUNNING'
-const w=hist.slice(-375),end=w.length?w[w.length-1].t:0,data=w.map(p=>({...p,t:+(p.t-end).toFixed(1)}))
+const w=hist.slice(-375).filter((_,i)=>i%3===0),end=w.length?w[w.length-1].t:0,data=w.map(p=>({...p,t:+(p.t-end).toFixed(1)}))
 return <div className="space-y-6">
 <section><H>Auto throttle</H>
 <div className="text-[10px] uppercase tracking-[.14em] text-mid mb-1">Target</div>

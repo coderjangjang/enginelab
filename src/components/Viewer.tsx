@@ -1,7 +1,7 @@
 import {Canvas,useFrame,useThree} from '@react-three/fiber'
 import {OrbitControls,Edges} from '@react-three/drei'
 import * as THREE from 'three'
-import {ReactNode,useEffect,useMemo,useRef} from 'react'
+import {ReactNode,RefObject,memo,useEffect,useMemo,useRef} from 'react'
 import {EngineConfig,CylInfo,cylLayout} from '../data/engines'
 import {PartType} from '../data/parts'
 import {Sim} from '../sim/Sim'
@@ -70,17 +70,20 @@ return <group ref={g}><mesh position={[0,0,zc]} rotation={[HP,0,0]}><cylinderGeo
 {cyls.map(c=>{const o=(c.off+c.a)*D,sx=Math.sin(o),cx=Math.cos(o);return <group key={c.i}>
 <mesh position={[R*sx,R*cx,c.z]} rotation={[HP,0,0]}><cylinderGeometry args={[.12,.12,.3,16]}/><meshStandardMaterial {...p}/></mesh>
 {[-.2,.2].map(d=><mesh key={d} position={[R*sx/2,R*cx/2,c.z+d]} rotation={[0,0,-o]}><boxGeometry args={[.3,R+.3,.1]}/><meshStandardMaterial {...p}/></mesh>)}</group>})}</group>}
-function Rig({cfg,sel,reg,reset}:{cfg:EngineConfig;sel:string|null;reg:Map<string,THREE.Object3D>;reset:number}){
+function Rig({cfg,sel,reg,reset,spin}:{cfg:EngineConfig;sel:string|null;reg:Map<string,THREE.Object3D>;reset:number;spin:boolean}){
 const ctl=useRef<any>(null),{camera}=useThree(),on=useRef(0),v=useMemo(()=>new THREE.Vector3(),[]),len=cylLayout(cfg).len
 useEffect(()=>{camera.position.set(len*.7+4,3+len*.25,len*.5+4);ctl.current?.target.set(0,.4,0);ctl.current?.update()},[cfg.id,reset])
 useEffect(()=>{on.current=sel?2.2:0},[sel])
 useFrame((_,dt)=>{const c=ctl.current;if(!c||on.current<=0||!sel)return;const o=reg.get(sel);if(!o)return;on.current-=dt;o.getWorldPosition(v)
 const k=1-Math.exp(-dt*5),off=camera.position.clone().sub(c.target),d=off.length();c.target.lerp(v,k);camera.position.copy(c.target).add(off.setLength(THREE.MathUtils.lerp(d,Math.min(d,6),k)));c.update()})
-return <OrbitControls ref={ctl} makeDefault enableDamping dampingFactor={.1} minDistance={2} maxDistance={60}/>}
-export default function Viewer({sim,cfg,sel,hidden,onSelect,bg,reset}:{sim:Sim;cfg:EngineConfig;sel:string|null;hidden:PartType[];onSelect:(id:string|null)=>void;bg:'black'|'light';reset:number}){
+return <OrbitControls ref={ctl} makeDefault enableDamping dampingFactor={.1} minDistance={2} maxDistance={60} autoRotate={spin} autoRotateSpeed={1.2}/>}
+function Viewer({sim,cfg,sel,hidden,onSelect,bg,reset,spin,quality,fpsEl}:{sim:Sim;cfg:EngineConfig;sel:string|null;hidden:PartType[];onSelect:(id:string|null)=>void;bg:'black'|'light';reset:number;spin:boolean;quality:'low'|'high';fpsEl:RefObject<HTMLElement>}){
 const reg=useRef(new Map<string,THREE.Object3D>()).current,x:Ctx={sim,sel,hidden,bg,onSelect,reg}
-return <Canvas camera={{fov:35,near:.1,far:300}} dpr={[1,2]} onPointerMissed={()=>onSelect(null)}>
+return <Canvas key={quality} camera={{fov:35,near:.1,far:300}} dpr={[1,quality==='low'?1:2] as [number,number]} gl={{preserveDrawingBuffer:true,antialias:quality!=='low'}} onPointerMissed={()=>onSelect(null)}>
 <color attach="background" args={[bg==='black'?'#000000':'#F2F2F2']}/>
 <ambientLight intensity={.7}/><directionalLight position={[6,10,8]} intensity={1.8}/><directionalLight position={[-8,-3,-6]} intensity={.7}/>
 <gridHelper args={[40,40,'#808080','#808080']} position={[0,-4.4,0]}/>
-<Rig cfg={cfg} sel={sel} reg={reg} reset={reset}/><Model cfg={cfg} x={x}/></Canvas>}
+<Rig cfg={cfg} sel={sel} reg={reg} reset={reset} spin={spin}/><Fps el={fpsEl}/><Model cfg={cfg} x={x}/></Canvas>}
+
+function Fps({el}:{el:RefObject<HTMLElement>}){const a=useRef({n:0,t:0});useFrame((_,dt)=>{const r=a.current;r.n++;r.t+=dt;if(r.t>=.5){if(el.current)el.current.textContent=Math.round(r.n/r.t)+' FPS';r.n=0;r.t=0}});return null}
+export default memo(Viewer)

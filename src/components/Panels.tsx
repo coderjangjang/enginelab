@@ -1,10 +1,11 @@
+import {memo} from 'react'
 import {Btn,Slider,Row,H} from './ui'
 import {EngineConfig,ENGINES,cylLayout} from '../data/engines'
 import {PARTS,PART_TYPES,PartType} from '../data/parts'
 import {Sim,Snap} from '../sim/Sim'
 const STROKES=['Intake','Compression','Power','Exhaust']
 const first=(t:PartType)=>t==='block'||t==='crank'?t:`${t}-0`
-export function LeftPanel({cfg,pick,sel,select,hidden,toggle,showAll}:{cfg:EngineConfig;pick:(id:string)=>void;sel:string|null;select:(id:string)=>void;hidden:PartType[];toggle:(t:PartType)=>void;showAll:()=>void}){
+function LeftPanelImpl({cfg,pick,sel,select,hidden,toggle,showAll}:{cfg:EngineConfig;pick:(id:string)=>void;sel:string|null;select:(id:string)=>void;hidden:PartType[];toggle:(t:PartType)=>void;showAll:()=>void}){
 const info=cfg.layout==='inline'?'Inline':cfg.banks.length>1?`${cfg.layout.toUpperCase()} · ${cfg.banks.length} banks`:''
 return <aside className="p-4 space-y-6 bg-white">
 <section><H>Engine</H><div className="grid grid-cols-2 gap-px bg-mid border border-mid">{ENGINES.map(e=><button key={e.id} onClick={()=>pick(e.id)} className={`h-9 text-xs last:col-span-2 ${e.id===cfg.id?'bg-black text-white':'bg-white hover:bg-mist'}`}>{e.name}</button>)}</div></section>
@@ -44,3 +45,5 @@ return <div className="p-4 grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-4 it
 <Slider label="Sim Speed" value={s.speed} min={.1} max={3} step={.1} unit="×" onChange={v=>{sim.speed=v;refresh()}}/>
 <Slider label="Idle RPM" value={s.idle} min={500} max={1500} step={50} onChange={v=>{sim.idle=Math.min(v,sim.max-500);refresh()}}/>
 <Slider label="Maximum RPM" value={s.max} min={3000} max={10000} step={100} onChange={v=>{sim.max=Math.max(v,sim.idle+500);refresh()}}/></div>}
+
+export const LeftPanel=memo(LeftPanelImpl)
