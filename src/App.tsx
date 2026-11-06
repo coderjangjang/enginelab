@@ -1,8 +1,8 @@
-import {useEffect,useMemo,useState} from 'react'
+import {useEffect,useMemo,useRef,useState} from 'react'
 import Viewer from './components/Viewer'
 import {LeftPanel,DataPanel,CylPanel,PartPanel,ControlBar} from './components/Panels'
 import DynoPanel from './components/DynoPanel'
-import LabPanel from './components/LabPanel'
+import LabPanel,{type Hist} from './components/LabPanel'
 import {Library,Compare,SettingsPage,Settings} from './components/Pages'
 import {Btn} from './components/ui'
 import {Sim} from './sim/Sim'
@@ -17,7 +17,9 @@ const [page,setPage]=useState<Page>('sim'),[eid,setEid]=useState('v8'),[sel,setS
 const [st,setSt]=useState<Settings>({bg:'black',sound:true,volume:.5})
 const sim=useMemo(()=>{const s=new Sim();s.setEngine(getEngine('v8'));return s},[]),audio=useMemo(()=>new EngineAudio(),[])
 const [snap,setSnap]=useState(()=>sim.snap()),refresh=()=>setSnap(sim.snap()),cfg=getEngine(eid)
-useEffect(()=>{const id=setInterval(()=>{setSnap(sim.snap());audio.update(sim,st.sound,st.volume)},80);return()=>clearInterval(id)},[st,sim,audio])
+const hist=useRef<Hist[]>([]),t0=useRef(performance.now())
+const rec=(n:ReturnType<Sim['snap']>)=>{const h=hist.current;h.push({t:+((performance.now()-t0.current)/1000).toFixed(2),rpm:Math.round(n.rpm),thr:Math.round(n.thr*100),tq:Math.round(n.tq),hp:Math.round(n.hp)});if(h.length>600)h.shift()}
+useEffect(()=>{const id=setInterval(()=>{const n=sim.snap();setSnap(n);rec(n);audio.update(sim,st.sound,st.volume)},80);return()=>clearInterval(id)},[st,sim,audio])
 const pick=(id:string)=>{setEid(id);sim.setEngine(getEngine(id));setSel(null);setReset(r=>r+1);refresh()}
 const select=(id:string|null)=>{setSel(id);if(id)setTab('part')}
 const toggle=(t:PartType)=>setHidden(h=>h.includes(t)?h.filter(x=>x!==t):[...h,t])
@@ -40,5 +42,5 @@ return <div className="h-full flex flex-col bg-white text-black">
 <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:overflow-y-auto border-t lg:border-t-0 lg:border-r border-black"><LeftPanel cfg={cfg} pick={pick} sel={sel} select={select} hidden={hidden} toggle={toggle} showAll={()=>setHidden([])}/></div>
 <aside className="lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:overflow-y-auto border-t lg:border-t-0 lg:border-l border-black bg-white">
 <div className="flex border-b border-black sticky top-0 bg-white z-10">{TABS.map(([k,n])=><button key={k} onClick={()=>setTab(k)} className={`flex-1 h-10 text-[10px] uppercase tracking-[.06em] ${tab===k?'bg-black text-white':'hover:bg-mist'}`}>{n}</button>)}</div>
-<div className="p-4">{tab==='data'&&<DataPanel s={snap} cfg={cfg}/>}{tab==='cyl'&&<CylPanel s={snap} cfg={cfg} sim={sim} refresh={refresh}/>}{tab==='part'&&<PartPanel sel={sel} hidden={hidden} toggle={toggle} clear={()=>setSel(null)}/>}{tab==='lab'&&<LabPanel sim={sim} s={snap} refresh={refresh} onStart={()=>audio.resume()}/>}{tab==='dyno'&&<DynoPanel sim={sim} s={snap} cfg={cfg} refresh={refresh} onStart={()=>audio.resume()}/>}</div></aside></div>}
+<div className="p-4">{tab==='data'&&<DataPanel s={snap} cfg={cfg}/>}{tab==='cyl'&&<CylPanel s={snap} cfg={cfg} sim={sim} refresh={refresh}/>}{tab==='part'&&<PartPanel sel={sel} hidden={hidden} toggle={toggle} clear={()=>setSel(null)}/>}{tab==='lab'&&<LabPanel sim={sim} s={snap} refresh={refresh} onStart={()=>audio.resume()} hist={hist.current} clear={()=>{hist.current.length=0}}/>}{tab==='dyno'&&<DynoPanel sim={sim} s={snap} cfg={cfg} refresh={refresh} onStart={()=>audio.resume()}/>}</div></aside></div>}
 </main></div>}

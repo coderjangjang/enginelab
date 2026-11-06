@@ -26,8 +26,8 @@ React 18 · TypeScript · Vite · Three.js · React Three Fiber · Drei · Tailw
 - **조작 패널**: Start, Stop, Pause, Resume, RPM, Throttle, Load, Idle RPM, Max RPM, Sim Speed
 - **계기판**: RPM, 토크, 마력, 온도, 유압, 스로틀, 부하, 점화 주파수 (SIM / EST / CALC / INPUT 태그로 구분)
 - **사운드**: AudioWorklet 기반 물리 모델 합성. 점화 순서에 따른 배기 펄스, 뱅크별 좌우 배기관, 흡기음, 시동 모터·크랭킹, 감속 백파이어, 레브 리미터, 룸 리버브. ON/OFF·볼륨
-- **Dyno**: RPM 스윕 측정, 토크·마력 그래프, 최대값 표시, 결과 저장(localStorage)
-- **Lab (실험 기능)**: 자동 스로틀(Throttle / RPM / Both를 min~max로 자동 조절, Ramp·Ping-pong·Sine·Staircase·Rev blip 패턴, 주기·반복 설정, 프리셋), 실린더 차단(Cylinder cut) — 토크·사운드·점화 간격 변화 관찰
+- **Dyno**: RPM 스윕 측정(시작/끝 RPM·시간 설정), 토크·출력 그래프와 피크 마커, Nm↔lb-ft·HP↔kW 단위 전환, 테스트 종료 시 자동 저장, 저장 결과 겹쳐 비교(Overlay)·이름 변경·CSV 내보내기
+- **Lab (실험 기능)**: 자동 스로틀(Throttle / RPM / Both를 min~max로 자동 조절, Ramp·Ping-pong·Sine·Staircase·Rev blip 패턴, 주기·반복 설정, 프리셋), Hold/Resume, 사용자 프리셋 저장, 최근 30초 스코프(RPM·스로틀)와 로그 CSV 내보내기, 실린더 차단(Cylinder cut)·Invert·Reset lab
 - **Compare**: 두 엔진의 사양 표와 토크·마력 곡선 비교
 - **Engine Library / Settings**: 엔진 카드 목록, 뷰어 배경(검정/밝은 회색)·사운드 설정
 
