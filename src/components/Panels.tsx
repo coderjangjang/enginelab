@@ -23,10 +23,10 @@ return <div><div className="mb-4"><div className="text-[10px] uppercase tracking
 <G k="Engine Temp" tag="EST" v={s.temp.toFixed(0)+' °C'} p={s.temp/120}/><G k="Oil Pressure" tag="EST" v={s.oil.toFixed(1)+' bar'} p={s.oil/5.5}/>
 <G k="Throttle" tag="INPUT" v={(s.thr*100).toFixed(0)+' %'} p={s.thr}/><G k="Engine Load" tag="INPUT" v={(s.load*100).toFixed(0)+' %'} p={s.load}/><G k="Firing Freq" tag="CALC" v={s.freq.toFixed(1)+' Hz'} p={s.freq/(s.max/120*cfg.cyl)}/>
 <p className="text-[10px] text-mid mt-3 leading-relaxed">EST = 시뮬레이션 추정값(실측 아님) · CALC = 입력값에서 계산 · INPUT/SIM = 조작값/시뮬레이션 상태</p></div>}
-export function CylPanel({s,cfg}:{s:Snap;cfg:EngineConfig}){const {cyls}=cylLayout(cfg)
-return <div><H>Firing order {cfg.firing.join('-')}</H><table className="w-full text-xs"><thead><tr className="text-left text-mid text-[10px] uppercase tracking-wider"><th className="py-1">Cyl</th><th>Bank</th><th>Stroke</th><th>IN/EX</th></tr></thead><tbody>
+export function CylPanel({s,cfg,sim,refresh}:{s:Snap;cfg:EngineConfig;sim:Sim;refresh:()=>void}){const {cyls}=cylLayout(cfg)
+return <div><H>Firing order {cfg.firing.join('-')}</H><p className="text-[10px] text-mid mb-2">행을 클릭하면 해당 실린더의 점화를 차단(Cylinder cut)합니다.</p><table className="w-full text-xs"><thead><tr className="text-left text-mid text-[10px] uppercase tracking-wider"><th className="py-1">Cyl</th><th>Bank</th><th>Stroke</th><th>IN/EX</th></tr></thead><tbody>
 {cyls.map(c=>{const ph=(((s.crank+c.off)%720)+720)%720,k=Math.floor(ph/180),pw=k===2
-return <tr key={c.i} className={`border-t border-mist ${pw&&s.rpm>20?'bg-black text-white':''}`}><td className="py-1.5 font-mono">{c.i+1}</td><td className="font-mono">{c.bank+1}</td><td>{STROKES[k]}</td><td className="font-mono">{ph<200?'IN':ph>=520?'EX':'—'}</td></tr>})}</tbody></table></div>}
+const cut=s.cut[c.i];return <tr key={c.i} onClick={()=>{sim.cut[c.i]=!sim.cut[c.i];refresh()}} className={`border-t border-mist cursor-pointer ${cut?'text-mid line-through':pw&&s.rpm>20?'bg-black text-white':''}`}><td className="py-1.5 font-mono">{c.i+1}</td><td className="font-mono">{c.bank+1}</td><td>{cut?'CUT OFF':STROKES[k]}</td><td className="font-mono">{ph<200?'IN':ph>=520?'EX':'—'}</td></tr>})}</tbody></table></div>}
 export function PartPanel({sel,hidden,toggle,clear}:{sel:string|null;hidden:PartType[];toggle:(t:PartType)=>void;clear:()=>void}){
 if(!sel)return <p className="text-xs text-mid leading-relaxed">3D 뷰어 또는 Parts 목록에서 부품을 선택하면 이름·역할이 표시되고 카메라가 해당 부품으로 이동합니다.</p>
 const [t0,n]=sel.split('-'),t=t0 as PartType,p=PARTS[t],bank=t==='cam'||t==='imanifold'||t==='emanifold'
@@ -38,8 +38,8 @@ const on=s.running||s.starting
 return <div className="p-4 grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-4 items-end bg-white">
 <div className="flex flex-wrap gap-2 xl:col-span-4"><Btn a={on} disabled={on} onClick={onStart}>Engine Start</Btn><Btn disabled={!on} onClick={()=>{sim.stop();refresh()}}>Engine Stop</Btn>
 <Btn a={s.paused} onClick={()=>{sim.paused=!sim.paused;refresh()}}>{s.paused?'Resume':'Pause'}</Btn></div>
-<Slider label="RPM" value={s.cmd} min={0} max={10000} step={50} onChange={v=>{sim.cmd=v;refresh()}}/>
-<Slider label="Throttle" value={Math.round(s.thr*100)} min={0} max={100} unit=" %" disabled={s.dyno.active} onChange={v=>{sim.throttle=v/100;refresh()}}/>
+<Slider label="RPM" value={s.cmd} min={0} max={10000} step={50} disabled={s.auto.on&&s.auto.target!=='throttle'} onChange={v=>{sim.cmd=v;refresh()}}/>
+<Slider label="Throttle" value={Math.round(s.thr*100)} min={0} max={100} unit=" %" disabled={s.dyno.active||(s.auto.on&&s.auto.target!=='rpm')} onChange={v=>{sim.throttle=v/100;refresh()}}/>
 <Slider label="Engine Load" value={Math.round(s.load*100)} min={0} max={100} unit=" %" onChange={v=>{sim.load=v/100;refresh()}}/>
 <Slider label="Sim Speed" value={s.speed} min={.1} max={3} step={.1} unit="×" onChange={v=>{sim.speed=v;refresh()}}/>
 <Slider label="Idle RPM" value={s.idle} min={500} max={1500} step={50} onChange={v=>{sim.idle=Math.min(v,sim.max-500);refresh()}}/>

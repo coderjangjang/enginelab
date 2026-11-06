@@ -2,15 +2,16 @@ import {useEffect,useMemo,useState} from 'react'
 import Viewer from './components/Viewer'
 import {LeftPanel,DataPanel,CylPanel,PartPanel,ControlBar} from './components/Panels'
 import DynoPanel from './components/DynoPanel'
+import LabPanel from './components/LabPanel'
 import {Library,Compare,SettingsPage,Settings} from './components/Pages'
 import {Btn} from './components/ui'
 import {Sim} from './sim/Sim'
 import {EngineAudio} from './sim/audio'
 import {getEngine} from './data/engines'
 import {PartType} from './data/parts'
-type Page='sim'|'lib'|'cmp'|'set';type Tab='data'|'cyl'|'part'|'dyno'
+type Page='sim'|'lib'|'cmp'|'set';type Tab='data'|'cyl'|'part'|'dyno'|'lab'
 const NAV:[Page,string][]=[['sim','Simulator'],['lib','Engine Library'],['cmp','Compare'],['set','Settings']]
-const TABS:[Tab,string][]=[['data','Data'],['cyl','Cylinders'],['part','Part'],['dyno','Dyno']]
+const TABS:[Tab,string][]=[['data','Data'],['cyl','Cylinders'],['part','Part'],['dyno','Dyno'],['lab','Lab']]
 export default function App(){
 const [page,setPage]=useState<Page>('sim'),[eid,setEid]=useState('v8'),[sel,setSel]=useState<string|null>(null),[hidden,setHidden]=useState<PartType[]>([]),[tab,setTab]=useState<Tab>('data'),[reset,setReset]=useState(0)
 const [st,setSt]=useState<Settings>({bg:'black',sound:true,volume:.5})
@@ -38,6 +39,6 @@ return <div className="h-full flex flex-col bg-white text-black">
 <div className="lg:col-start-2 lg:row-start-2"><ControlBar sim={sim} s={snap} refresh={refresh} onStart={start}/></div>
 <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:overflow-y-auto border-t lg:border-t-0 lg:border-r border-black"><LeftPanel cfg={cfg} pick={pick} sel={sel} select={select} hidden={hidden} toggle={toggle} showAll={()=>setHidden([])}/></div>
 <aside className="lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:overflow-y-auto border-t lg:border-t-0 lg:border-l border-black bg-white">
-<div className="flex border-b border-black sticky top-0 bg-white z-10">{TABS.map(([k,n])=><button key={k} onClick={()=>setTab(k)} className={`flex-1 h-10 text-[11px] uppercase tracking-[.1em] ${tab===k?'bg-black text-white':'hover:bg-mist'}`}>{n}</button>)}</div>
-<div className="p-4">{tab==='data'&&<DataPanel s={snap} cfg={cfg}/>}{tab==='cyl'&&<CylPanel s={snap} cfg={cfg}/>}{tab==='part'&&<PartPanel sel={sel} hidden={hidden} toggle={toggle} clear={()=>setSel(null)}/>}{tab==='dyno'&&<DynoPanel sim={sim} s={snap} cfg={cfg} refresh={refresh} onStart={()=>audio.resume()}/>}</div></aside></div>}
+<div className="flex border-b border-black sticky top-0 bg-white z-10">{TABS.map(([k,n])=><button key={k} onClick={()=>setTab(k)} className={`flex-1 h-10 text-[10px] uppercase tracking-[.06em] ${tab===k?'bg-black text-white':'hover:bg-mist'}`}>{n}</button>)}</div>
+<div className="p-4">{tab==='data'&&<DataPanel s={snap} cfg={cfg}/>}{tab==='cyl'&&<CylPanel s={snap} cfg={cfg} sim={sim} refresh={refresh}/>}{tab==='part'&&<PartPanel sel={sel} hidden={hidden} toggle={toggle} clear={()=>setSel(null)}/>}{tab==='lab'&&<LabPanel sim={sim} s={snap} refresh={refresh} onStart={()=>audio.resume()}/>}{tab==='dyno'&&<DynoPanel sim={sim} s={snap} cfg={cfg} refresh={refresh} onStart={()=>audio.resume()}/>}</div></aside></div>}
 </main></div>}

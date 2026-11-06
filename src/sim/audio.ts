@@ -15,7 +15,7 @@ this.buf=[new Float32Array(4096),new Float32Array(4096)];this.wp=[0,0];this.lp=[
 this.env=[0,0];this.e1=[0,0];this.ep=[0,0];this.dc=[0,0];this.s=[0,0];
 this.n1=0;this.n2=0;this.np=0;this.tk=0;this.sp=0;
 this.port.onmessage=e=>{if(e.data.c)this.c=e.data.c;else Object.assign(this.t,e.data)}}
-fire(){const c=this.c,t=this.t,ci=c.fo[this.k%c.cyl];this.k++;
+fire(){const c=this.c,t=this.t,ci=c.fo[this.k%c.cyl];this.k++;if(t.cut&&t.cut[ci])return;
 let amp=t.fire?(.12+.88*Math.pow(this.thr,.8))*(.72+.28*this.ld):.1+.04*Math.random();
 amp*=1+(H(ci)-.5)*.18+(Math.random()-.5)*c.jit*.012;
 if(t.fire&&this.rpm>t.max*.985&&(this.k&1))amp*=.12;
@@ -62,5 +62,5 @@ n.connect(hp);hp.connect(ls);ls.connect(pk);pk.connect(lp);lp.connect(comp);comp
 this.ready=true}catch(e){console.warn('Engine audio unavailable (AudioWorklet needs a secure context)',e)}}
 update(s:Sim,on:boolean,vol:number){if(!this.ready||!this.node||!this.m||!this.ctx)return;const cfg=s.cfg
 if(cfg.id!==this.cid){this.cid=cfg.id;this.node.port.postMessage({c:{cyl:cfg.cyl,fo:cfg.firing.map(k=>k-1),B:cfg.banks.length,f0:180*Math.pow(2/cfg.dispL,.35),br:cfg.snd[4],jit:cfg.snd[3],skew:cfg.layout==='flat'?1.09:1.04}})}
-this.node.port.postMessage({rpm:s.paused?0:s.rpm*Math.min(s.speed,1.5),thr:s.throttle,ld:s.load,fire:s.running?1:0,st:s.starting>0?1:0,max:s.max})
+this.node.port.postMessage({rpm:s.paused?0:s.rpm*Math.min(s.speed,1.5),thr:s.throttle,ld:s.load,fire:s.running?1:0,st:s.starting>0?1:0,max:s.max,cut:s.cut})
 this.m.gain.setTargetAtTime(on?vol*.7:0,this.ctx.currentTime,.05)}}

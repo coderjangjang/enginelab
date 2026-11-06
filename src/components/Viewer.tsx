@@ -27,7 +27,7 @@ pis.current?.position.set(0,u,0)
 if(rod.current){rod.current.position.set(R*s/2,(R*k+u)/2,0);rod.current.rotation.z=Math.atan2(R*s,u-R*k)}
 iv.current?.position.set(0,-.14*(ph<200?Math.sin(Math.PI*ph/200):0),0)
 ev.current?.position.set(0,-.14*(ph>=520?Math.sin(Math.PI*(ph-520)/200):0),0)
-if(pm.current)pm.current.emissiveIntensity=ph>352&&ph<382?2.5:(plugSel?.45:0)})
+if(pm.current)pm.current.emissiveIntensity=ph>352&&ph<382&&!x.sim.cut[c.i]?2.5:(plugSel?.45:0)})
 const M=(id:string,t:PartType)=><meshStandardMaterial {...mp(x,id,t)}/>
 return <group position={[0,0,c.z]}>
 <Part id={`piston-${i}`} t="piston" off={[0,1.5,0]} win={[.4,.9]} x={x}><group ref={pis}>
